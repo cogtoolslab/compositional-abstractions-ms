@@ -1,0 +1,58 @@
+,_id,iterationName,gameid,time,assignmentId,leftTarget,rightTarget,trialNum,turnNum,repNum,individualPracticeAttempts,content,timeElapsedInTurn,timeElapsedInTrial,eventType,practice
+0,5f47d4f7df57f9222c29cc13,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598543095279.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,horizontal,vertical,,0,practice,0,"blue B 3rd postion, bottom left~~~ red B 4th position from bottom right, just left of red line",184259,184259,chatMessage,True
+1,5f47d55bdf57f9222c29cc17,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598543195176.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,horizontal,vertical,,0,practice,0,"blue 3rd bottom, red line in middle, Red 4th bottom position
+",40107,40107,chatMessage,True
+2,5f47d5aedf57f9222c29cc1b,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598543278099.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,horizontal,vertical,,0,practice,0,"Blue starts 3rd position bottom from left
+Red starts 4th postion from right",43133,43133,chatMessage,True
+3,5f47d690df57f9222c29cc1f,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598543504768.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,C,0.0,0,0,0,"4 blue 2nd positionbottomleft 2x skip 3 blocks lay 1more~~~ up 5 lay one more
+red 2 on top eac blue 
+
+",211020,211020,chatMessage,False
+4,5f47d7badf57f9222c29cc23,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598543802540.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,C,0.0,2,0,0,"blue total 4 (2 start 2 from left) skip 3 lay one, up 5 lay one
+Red: 4 tot start on left most blue",131686,508791,chatMessage,False
+5,5f47d8a8df57f9222c29cc2a,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544040912.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,C,0.0,4,0,0,"blue (left 2nd position, 2 blocks), skip 3 lay another blue, up 5 another
+Red 2 high each structure
+",120909,747158,chatMessage,False
+6,5f47d997df57f9222c29cc31,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544279981.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,Pi,1.0,0,0,0,"shape L and N: 
+L 2 red high 2 blue long start 2nd bottom left 
+N 1 blue high 2 red  start 2nd right",129384,129384,chatMessage,False
+7,5f47da46df57f9222c29cc36,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544454670.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,Pi,1.0,2,0,0,shape lower case n starts 2nd from right bottom: 1 blue high 2 red across,37091,304069,chatMessage,False
+8,5f47db23df57f9222c29cc46,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544675217.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,Pi,2.0,0,0,0,"shape C: 1blue block 3rd position from bottom, 2 red on top, one blue on tops of that
+",79746,79746,chatMessage,False
+9,5f47db64df57f9222c29cc4b,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544740468.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,Pi,2.0,2,0,0,"n shape, blue starts 2nd from right bottom, skip 2 lay another blue, 2 red on top to connect them",46986,144966,chatMessage,False
+10,5f47dc0bdf57f9222c29cc57,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544907659.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,Pi,2.0,4,0,0,"I told you wrong ! Sorry! I got my colors messed up, just place the rest and lets move on",62848,312186,chatMessage,False
+11,5f47dc45df57f9222c29cc5c,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598544965454.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,L,3.0,0,1,0,"C shape: 1 blue starts 3rd pos from left, the 2 red on top of each other, blue on top of them",39129,39129,chatMessage,False
+12,5f47dc9cdf57f9222c29cc6b,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545052478.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,L,3.0,2,1,0,"L shape lay 2 blue starting 2nd from right bottom , 2 red on top of left most blue block ",72601,126159,chatMessage,False
+13,5f47dcf6df57f9222c29cc71,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545142010.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,L,4.0,0,1,0,"n shape starts 2nd, bottom left with a RED block, two blue on top of that and a red down ",67834,67834,chatMessage,False
+14,5f47dd40df57f9222c29cc77,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545216234.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,L,4.0,2,1,0,L shape starts 2nd bottom right with two blue and 2 red on top of the left most blue block,36466,142066,chatMessage,False
+15,5f47dd6bdf57f9222c29cc81,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545259059.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,C,5.0,0,1,0,n shape just like last time starts 2nd bottom left,16769,16769,chatMessage,False
+16,5f47dddedf57f9222c29cc8b,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545374146.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,C,5.0,2,1,0,"C shape starts 3rd from bottom right lay one blue, two red on top of left most blue, then 2nd  blue",57241,131854,chatMessage,False
+17,5f47de33df57f9222c29cc92,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545459348.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,Pi,6.0,0,2,0,"C shape starts 3rd bottom left, lay 1 blue, two red on top of left most blue, then another blue top",64462,64462,chatMessage,False
+18,5f47de6cdf57f9222c29cca0,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545516668.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,Pi,6.0,2,2,0,"n shape: lay red 2nd from right bottom, two blue across and another red down",42826,121777,chatMessage,False
+19,5f47deb0df57f9222c29cca6,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545584935.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,Pi,7.0,0,2,0,"L shape starts 2nd bottom from left with 2 blue block and 2 red on top of left most blue block
+",48805,48805,chatMessage,False
+20,5f47dedcdf57f9222c29ccaf,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545628812.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,Pi,7.0,2,2,0,"n shape starts 2nd bottom right, lay red, 2 blue across, another red down",32484,92676,chatMessage,False
+21,5f47df0bdf57f9222c29ccbc,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545675283.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,C,8.0,0,2,0,L starts 2nd bottom left 2 blue across 2 red high starting on the left most blue block,30589,30589,chatMessage,False
+22,5f47df34df57f9222c29ccc6,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545716052.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,L,C,8.0,2,2,0,"C starting 3rd bottom right with blue, 2 red high, another blue on top",26627,71357,chatMessage,False
+23,5f47df60df57f9222c29ccd1,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545760120.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,L,9.0,0,3,0,"n starting 2nd bottom left with red, 2 blue across, red down",23341,23341,chatMessage,False
+24,5f47df7edf57f9222c29ccd6,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545790244.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,L,9.0,2,3,0,L starting 2nd bottom right with 2 blue and 2 red on left most blue block,20225,53480,chatMessage,False
+25,5f47dfb3df57f9222c29ccdd,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545843957.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,C,10.0,0,3,0,"n starting 2nd bottom left with red, two blue across, another red down",24999,24999,chatMessage,False
+26,5f47dfd7df57f9222c29cceb,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545879424.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,Pi,C,10.0,2,3,0,"C starting with blue in 3rd bottom from right, 2 red high, and another blue",24329,60465,chatMessage,False
+27,5f47dffedf57f9222c29ccf8,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545918809.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,L,11.0,0,3,0,"C starting 3rd bottom left with blue, 2 red high, blue on top",19478,19478,chatMessage,False
+28,5f47e01ddf57f9222c29cd00,pilot3,5809-2a5e096b-a425-4bc7-b495-cf74cb60ded6,1598545949333.0,3IFS6Q0HJJXHBMAZNQA946Z5K1ZSIX,C,L,11.0,2,3,0,L starting 2nd bottom right with 2 blue and 2 red on top of left most blue,19955,50064,chatMessage,False
+0,5f47d83ddf57f9222c29cc25,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598543933900.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,horizontal,vertical,,0,practice,1,"put blue block on the middle of left red line
+put red block on the left side of the right red line",166863,166863,chatMessage,True
+1,5f47da72df57f9222c29cc37,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598544498489.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,C,Pi,0.0,0,0,1,"1)B on L-Line, 2Red & 1B ontop (C shape) 2)1Red 2nd to L & 2nd to R of R-Line~~~Lay 2B's ontop",539854,539854,chatMessage,False
+2,5f47db5adf57f9222c29cc4a,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598544730393.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,L,Pi,1.0,0,0,1,"1B on both side of LL~~~ 2R ontop left B~~~ (Lshape)1R on 2nd L and 2nd R of RL,lay 2B ontop(same as b4)",151026,151026,chatMessage,False
+3,5f47dc4edf57f9222c29cc5d,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598544974508.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,L,C,2.0,0,0,1,"1B both side LL~~~2R on LB (same b4) 1B middle RL, 2R top LB~~~ 1B top R (c shape)",175345,175345,chatMessage,False
+4,5f47dd3fdf57f9222c29cc76,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545215524.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,Pi,L,3.0,0,1,1,"1R each on 2ndL & 2ndR of LL, lay 2B's ontop~~~ 1B on both side of RL, 2R ontop the left B (Lshape)",193974,193974,chatMessage,False
+5,5f47de24df57f9222c29cc91,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545444565.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,Pi,C,4.0,0,1,1,"1r on 2ndL&2ndR of LL, 2B ontop~~~ (frowny) 1B middle of RL, 2R ontop LB, 1B ontop (c shape)",156820,156820,chatMessage,False
+6,5f47deb3df57f9222c29cca7,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545587736.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,C,L,5.0,0,1,1,"cshape on LL (from last trial), Lshape on RL~~~ (2b each side, 2R ontop)",82800,82800,chatMessage,False
+7,5f47df17df57f9222c29ccc0,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545687774.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,C,Pi,6.0,0,2,1,"same cshape on LL~~~ frowny on RL 
+also ur doin great ily",38354,38354,chatMessage,False
+8,5f47dfa8df57f9222c29ccdc,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545832543.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,L,C,7.0,0,2,1,"Lshape on LL (2B + 2R), Cshape on R line (1B +2R+1B)",97934,97934,chatMessage,False
+9,5f47dfecdf57f9222c29ccf1,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545900706.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,L,Pi,8.0,0,2,1,"L shape on left
+frowny on right",30609,30609,chatMessage,False
+10,5f47e025df57f9222c29cd04,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598545957845.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,Pi,C,9.0,0,3,1,"FROWNY ON LEFT, C SHAPE ON RIGHT ",27139,27139,chatMessage,False
+11,5f47e062df57f9222c29cd10,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598546018325.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,Pi,L,10.0,0,3,1,"Frowny on left, Lshape on right (2B+2R)",31897,31897,chatMessage,False
+12,5f47e093df57f9222c29cd1c,pilot3,6598-80d65299-0654-43b4-9f27-08572427cb2d,1598546067222.0,3NQL1CS15SMJTE68L31H1HD09OWVYG,C,L,11.0,0,3,1,"Cshape on left, L shape on right",18450,18450,chatMessage,False
