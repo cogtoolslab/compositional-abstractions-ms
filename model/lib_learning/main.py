@@ -41,6 +41,7 @@ if __name__ == "__main__":
             job.append((towers[config].original, None))
         jobs.append(job)
 
+
     for i, job in enumerate(jobs):
         print('this job is of length', i+1)
         combo = [(g0, [Frontier.dummy(p, tp=tp) for p, tp in job], w) for w in scope]
