@@ -61,8 +61,6 @@ if __name__ == "__main__":
     with open(os.path.join(path, str(ppt), 'configs.p'), "rb") as input_file:
             trial_seq = pickle.load(input_file)
 
-    #single ppt first
-
     jobs = []
     for i in range(len(trial_seq)+1):
         job = []
