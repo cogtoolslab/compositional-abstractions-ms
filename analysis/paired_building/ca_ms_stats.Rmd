@@ -23,9 +23,9 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```{r ggplot, include=FALSE}
 theme_set(theme_classic())
 theme_update(# axis labels
-  axis.title = element_text(size = 28),
-  axis.text = element_text(size = 24),
-  title = element_text(size = 24),
+  axis.title = element_text(size = 16),
+  axis.text = element_text(size = 16),
+  title = element_text(size = 16),
   legend.position = 'FALSE', 
   text = element_text(size=16), 
   element_line(size=1), 
@@ -103,7 +103,7 @@ passedConfused <- df_exit.raw %>%
   distinct(gameid)
 
 #How many dyads said they spoke English
-passedEnglish <- df_exit %>% 
+passedEnglish <- df_exit.raw %>% 
   filter(nativeEnglish == 'yes') %>% 
   distinct(gameid)
 
@@ -114,7 +114,7 @@ gamesToKeep = intersect(passedAcc, passedConfused) %>% intersect(passedEnglish) 
 ### Count participants
 
 ```{r}
-cat('before exclusions:', df_exit$gameid %>% unique() %>% length(), 'games started')
+cat('before exclusions:', df_exit.raw$gameid %>% unique() %>% length(), 'games started\n')
 cat('after exclusions:', length(gamesToKeep), 'completed in dataset')
 ```
 
@@ -229,219 +229,147 @@ ggsave(here('results/plots/fig3B.pdf'), width=11, height = 11, units='cm', useDi
 
 ```{r}
 m.wc = df_trial %>% 
-  lmer(word_count ~ poly(repNum, 2) + (1 + poly(repNum, 2) | gameid) + (1 + poly(repNum, 1)  | towerSet),
+  lmer(log(word_count) ~ poly(repNum, 2) + (1 + poly(repNum, 2) | gameid) + (1 + poly(repNum, 1)  | towerSet),
        data = .)
 summary(m.wc)
 
 # technically as an integer count variable >0, we should be using poisson
 m.wc.poisson = df_trial %>% 
-  glmer(word_count ~ poly(repNum, 2) + (1 + poly(repNum, 2) | gameid) + (0 + poly(repNum, 1) | towerSet),
+  glmer(word_count ~ poly(repNum,1) + (1 + poly(repNum,1) | gameid) + (1 + poly(repNum,1) | towerSet),
        data = ., family = 'poisson')
 summary(m.wc.poisson)
 ```
 
+## Number of discrete messages 
 
-### Num messages 
+### Make figure S1 in supplemental
 
-#### Number of messages across trials
 ```{r}
-set.seed(bootstrap_seed)
+n_messages.indiv <- df_trial %>%
+  group_by(repNum, gameid) %>%
+  summarize(n_messages = mean(n_messages)) 
 
-mess.boot <- df_trial %>%
+n_messages.boot <- n_messages.indiv %>%
   group_by(repNum) %>%
-  tidyboot_mean(column=n_messages, nboot=1000)
-mess.boot
-```
+  tidyboot_mean(column=n_messages, nboot=1000) 
 
-```{r}
-mess.boot %>%
+n_messages.boot %>%
   ggplot(aes(x=repNum, y=empirical_stat)) +
-    geom_errorbar(aes(ymin=ci_lower, ymax = ci_upper), width = 0, size = 1.5,
-                  data = mess.boot, color = primary_color) +  
+    geom_jitter(aes(y = n_messages), data = n_messages.indiv, width = 0.1, height = 0.15, alpha = 0.2) +
+    geom_errorbar(aes(ymin=ci_lower, ymax = ci_upper), width = 0, size = 1.5, color = primary_color) +  
     geom_line(size=1.5, color = primary_color)+
     geom_point(size = 4, color = primary_color) +
     ylab("messages") +
     xlab("repetition") +
-    # theme_few() +
-    # scale_x_continuous(breaks = round(seq(1, 4, by =1),1)) +
     xlim(c(0.75,4.25)) +
-    # ylim(c(1,7)) +
-    #scale_x_continuous(limits = c(1,6), breaks = c(1,2,3,4),labels=c('first', '2nd','3rd','final')) +
     scale_y_continuous(limits = c(1,6), breaks = c(1,2,3,4,5,6),labels=c(' 1', ' 2',' 3',' 4',' 5',' 6')) +
-    ggtitle('messages per trial') +
-    theme(legend.position = 'FALSE', text = element_text(size=16), element_line(size=1), plot.title = element_text(hjust = 0.5, size=16), element_rect(size=2, color="#00000"))
-ggsave('./plots/unused/CA_ORLR20_messages_reps.pdf', width=7, height = 11, units='cm', useDingbats = F)
+    theme(legend.position = 'FALSE', aspect.ratio = 1, text = element_text(size=16), 
+          element_line(size=1), plot.title = element_text(hjust = 0.5, size=16), element_rect(size=2, color="#00000"))
+
+ggsave(here('results/plots/supplemental_num_messages.pdf'), width=11, height = 11, units='cm', useDingbats = F)
 ```
 
-#### Linear mixed effects model for number of messages
+### Linear mixed effects model for number of messages
+
 ```{r}
-m.mes = lmer(data = df_trial, n_messages ~ repNum + (1 + repNum || gameid) + (1 | towerSet))
+m.mes = df_trial %>%
+  lmer(n_messages ~ poly(repNum,2) + (1 + poly(repNum,2) | gameid) + (1 + poly(repNum,2) | towerSet),
+              data = .)
 summary(m.mes)
 ```
 
-### Timing 
-
-Have to exclude participants marked as 'flagged', as techical errors/ connectivity issues mean they had some negative block placement times.
-
-#### Total time to send messages across trials
-```{r}
-set.seed(bootstrap_seed)
-
-chat.time.boot <- df_trial %>%
-  group_by(repNum) %>%
-  tidyboot_mean(column=total_chat_duration, nboot=100)
-chat.time.boot
-```
+Again, this is count data so we should really be using poisson linking function.
 
 ```{r}
-chat.time.boot %>%
-  ggplot(aes(x=repNum, y=empirical_stat)) +
-    geom_errorbar(aes(ymin=ci_lower, ymax = ci_upper), width = 0, size = 1.5,color = primary_color) +  
-    geom_line(size=1.5, color = primary_color)+
-    geom_point(size = 4, color = primary_color) +
-    ylab("total chat duration (s)") +
-    xlab("repetition") +
-    # theme_few() +
-    # scale_x_continuous(breaks = round(seq(1, 4, by =1),1)) +
-    # xlim(c(0.5,4.5)) +  
-    # ylim(c(0,7)) +
-    #scale_x_continuous(limits = c(0.6,4.4), breaks = c(1,2,3,4),labels=c('first', '2nd','3rd','final')) +
-    scale_y_continuous(limits = c(40000,200000), labels = c('40','60','120','160','200')) +
-    ggtitle('messaging time') +
-    theme(legend.position = 'FALSE', text = element_text(size=16), element_line(size=1), plot.title = element_text(hjust = 0.5, size=16), element_rect(size=2, color="#00000"))
-ggsave('./plots/CA_ORLR20_chat_duration_reps.pdf', width=7, height = 11, units='cm', useDingbats = F)
+m.mes = df_trial %>%
+  glmer(n_messages ~ poly(repNum,1) + (1 + poly(repNum,1) | gameid) + (1 + poly(repNum,1) | towerSet),
+              data = ., family = 'poisson')
+summary(m.mes)
 ```
-
-```{r}
-m.chat.time = lmer(data = df_trial, total_chat_duration ~ repNum + (1 + repNum | gameid) + (1 | towerSet))
-summary(m.chat.time)
-```
-
-
-
-#### Total time to send messages across trials
-```{r}
-set.seed(bootstrap_seed)
-
-block.time.boot <- df_trial %>%
-  group_by(repNum) %>%
-  tidyboot_mean(column=total_block_duration, nboot=1000)
-```
-
-```{r}
-block.time.boot %>%
-  ggplot(aes(x=repNum, y=empirical_stat)) +
-    geom_errorbar(aes(ymin=ci_lower, ymax = ci_upper), width = 0, size = 1.5, color = primary_color) +  
-    geom_line(size=1.5, color = primary_color)+
-    geom_point(size = 4, color = primary_color) +
-    ylab("total build duration") +
-    xlab("repetition") +
-    theme_few() +
-    theme(legend.position = 'FALSE', text = element_text(size=16), element_line(size=1), element_rect(size=2, color="#00000"))
-
-```
-
-```{r}
-m.block.time = lmer(data = df_trial, total_block_duration ~ repNum + (1 + repNum | gameid) + (1 | towerSet))
-summary(m.block.time)
-```
-
 
 ## Referring expression analyses
 
 ```{r}
-df_ref_exps = read_csv('../../results/csv/df_ref_exps.csv')
-df_ref_exps_melt = read_csv('../../results/csv/df_ref_exps_melt.csv')
+d.ref.long = read_csv(here('results/csv/df_ref_exps.csv'))
+d.ref.raw = read_csv(here('results/csv/df_ref_exps_melt.csv'))
 ```
+
+TODO: we should be handling rater variation better (i.e. calculate mixed vs. tower vs. block *within* rater and THEN aggregate proportions) otherwise rater noisiness is going to show up as more 'mixed'.
 
 
 ```{r}
-m1 = lmer(data = df_ref_exps_melt, n_refs ~ exp_type + (1 | workerID) + (1 | tower_pair))
-m2 = lmer(data = df_ref_exps_melt, n_refs ~ rep + exp_type + ( 1| workerID) + (1 | tower_pair))
-m3 = lmer(data = df_ref_exps_melt, n_refs ~ rep*exp_type + (1 | workerID) + (1 | tower_pair))
-# m4 = lmer(data = df_ref_exps_melt, n_refs ~ rep*exp_type + (1 | tower_pair))
-# m5 = lmer(data = df_ref_exps_melt, n_refs ~ rep* exp_type + (1 | tower_pair))
-anova(m1, m2, m3)
-summary(m3)
+# Sum raw referential expression counts then divide by 4 (since we have 4 raters)
+d.ref = d.ref.raw %>% 
+  group_by(dyad_gameid, trial_num, rep, exp_type) %>% 
+  summarise(sum_ref = sum(n_refs) ) %>%
+  spread(exp_type, sum_ref) %>%
+  mutate(mixType = case_when(block > 0 & tower > 0 ~ 'mixed', 
+                             block > 0 ~ 'block',
+                             tower > 0 ~ 'tower',
+                             TRUE ~ 'none')) %>%
+  group_by(rep, mixType) %>%
+  tally() %>%
+  filter(mixType != 'none')
 
-```
-
-```{r}
-df_ref_exps_melt
-```
-
-
-## Read in Data
-```{r}
-
-#Sum ref exp then divide by 4 (since we have 4 raters)
-dat_grouped = df_ref_exps_melt %>%  group_by(dyad_gameid, trial_num, rep, exp_type) %>% 
-  summarise(sum_ref = sum(n_refs)/4) # 4 annotators
-
-dat_grouped = spread(dat_grouped,exp_type	,sum_ref)
-
-dat_grouped$mixType = ifelse(dat_grouped$block>0 & dat_grouped$tower > 0, 'mixed', ifelse(dat_grouped$block>0, 'block',ifelse(dat_grouped$tower>0,'tower','none')))
-```
-
-### Plot
-```{r}
-
-df_ref =  as.data.frame(table(dat_grouped$rep, dat_grouped$mixType))
-df_ref
-df_ref = df_ref %>% rename(repNum = Var1, mixType = Var2)
-
-df_ref = df_ref %>% filter(mixType != 'none')
-
-ggplot(df_ref, aes(x=repNum, y = Freq, fill=mixType)) + 
-    geom_bar(stat="identity",position = 'fill') +
-    scale_fill_manual(values=c('black', primary_color, "light grey")) +
+ggplot(d.ref, aes(x=rep, y = n, fill=mixType)) + 
+  geom_bar(stat="identity",position = 'fill') +
+  scale_fill_manual(values=c('black', "#345FD6", "#3E7E30")) +
   xlab("repetition") +
   ylab('frequency') +
-  # ggtitle('builder accuracy') +
-  theme(legend.position = 'FALSE', text = element_text(size=16), element_line(size=1), plot.title = element_text(hjust = 0.5, size=16), element_rect(size=2, color="#00000"))
+  theme(legend.position = 'FALSE', aspect.ratio = 1,
+        text = element_text(size=12), element_line(size=1),
+        element_rect(size=2, color="#00000"))
 
-ggsave("../../results/plots/referring_expressions_barplot.pdf", width=20, height = 26, units='cm', useDingbats = F)
+ggsave(here("results/plots/fig4C.pdf"), width=11, height = 11, units='cm', useDingbats = F)
 ```
+
 ```{r}
-aggregate_trials <- df_ref_exps_melt %>% 
+aggregate_reps <- d.ref.raw %>% 
   group_by(dyad_gameid, trial_num, rep, exp_type, workerID) %>% 
-  summarise(sum_refs = sum(n_refs))
-aggregate_trials
+  summarise(sum_refs = sum(n_refs)) %>%
+  group_by(dyad_gameid, rep, exp_type) %>% 
+  summarise(mean_refs = mean(sum_refs)) %>%
+  group_by(rep, exp_type) %>% 
+  tidyboot_mean(mean_refs)
 
-aggregate_ratings <- aggregate_trials %>% 
-  group_by(dyad_gameid, trial_num, rep, exp_type) %>% 
-  summarise(mean_refs = mean(sum_refs))
-aggregate_ratings
-
-aggregate_reps <- aggregate_ratings %>% 
-   group_by(rep, exp_type) %>% 
-   summarise(mu = mean(mean_refs), sd = sd(mean_refs), n = n(), sem = sd(mean_refs)/sqrt(n()))
-aggregate_reps
-```
-
-
-
-```{r}
-ggplot(aggregate_reps, aes(x=rep, y=mu, colour=exp_type)) + geom_line(size = 1.5)+
-  geom_errorbar(aes(ymin=mu-sem, ymax=mu+sem), width = 0, size = 1.5)+
+ggplot(aggregate_reps, aes(x=rep, y=empirical_stat, colour=exp_type)) + geom_line(size = 1.5)+
+  geom_errorbar(aes(ymax=ci_upper, ymin = ci_lower), width = 0, size = 1.5)+
   geom_point(size = 4) +
-  # theme_few() +
   xlab("repetition")+
-  ylab("referring expressions")+
+  ylab("# referring expressions")+
   xlim(c(0.5,4.5)) +  
-  theme(legend.position = 'FALSE', text = element_text(size=16),
+  geom_hline(yintercept = 2, linetype = 'dashed', color = "#3E7E30") +
+  geom_hline(yintercept = 8, linetype = 'dashed', color = "#151515") +
+  theme(legend.position = 'FALSE', aspect.ratio = 1, 
+        text = element_text(size=16),
         element_line(size=1),
         element_rect(size=2, color="#00000"))+
-  scale_color_manual(values=c("#151515","#7D7D7D"))
-# ggsave('./plots/CA_ORLR20_referring_exps.pdf', width=7, height = 11, units='cm', useDingbats = F)
-# 
-# 
-# data(assemblage)
-# chiperm(data=assemblage, B=199, resid=TRUE, cramer=TRUE)
+  scale_color_manual(values=c("#151515","#3E7E30"))
 
+ggsave(here('results/plots/fig4B.pdf'), width=11, height = 11, units='cm', useDingbats = F)
 ```
 
-### Proportion of trials that are perfect reconstructions
+### Compare regression models
+
+```{r}
+d.refexp.linear = d.ref.raw %>%
+  lmer(n_refs ~ rep * exp_type + (1 + rep * exp_type | dyad_gameid) ,
+       data = ., control = lmerControl(optimizer = 'bobyqa'))
+
+summary(d.refexp.linear)
+
+d.refexp.poisson = d.ref %>%
+  glmer(n_refs ~ rep * exp_type + (1 + rep * exp_type | dyad_gameid) ,
+       data = ., family = 'poisson',
+       glmerControl(optimizer = 'bobyqa'))
+
+summary(m3)
+```
+
+
+# Supplementary analyses
+
+## Proportion of trials that are perfect reconstructions
 
 We might be worried about the stat above, since they're modeling a bounded F1 score with gaussian error.
 
@@ -512,5 +440,72 @@ ggsave('./plots/unused/CA_ORLR20_char_count_reps.pdf', width=7, height = 11, uni
 ```{r}
 m.cc = lmer(data = df_trial, char_count ~ repNum + (1 + repNum || gameid) + (1 | towerSet))
 summary(m.cc)
+```
+
+### Timing 
+
+Have to exclude participants marked as 'flagged', as techical errors/ connectivity issues mean they had some negative block placement times.
+
+#### Total time to send messages across trials
+```{r}
+set.seed(bootstrap_seed)
+
+chat.time.boot <- df_trial %>%
+  group_by(repNum) %>%
+  tidyboot_mean(column=total_chat_duration, nboot=100)
+chat.time.boot
+```
+
+```{r}
+chat.time.boot %>%
+  ggplot(aes(x=repNum, y=empirical_stat)) +
+    geom_errorbar(aes(ymin=ci_lower, ymax = ci_upper), width = 0, size = 1.5,color = primary_color) +  
+    geom_line(size=1.5, color = primary_color)+
+    geom_point(size = 4, color = primary_color) +
+    ylab("total chat duration (s)") +
+    xlab("repetition") +
+    # theme_few() +
+    # scale_x_continuous(breaks = round(seq(1, 4, by =1),1)) +
+    # xlim(c(0.5,4.5)) +  
+    # ylim(c(0,7)) +
+    #scale_x_continuous(limits = c(0.6,4.4), breaks = c(1,2,3,4),labels=c('first', '2nd','3rd','final')) +
+    scale_y_continuous(limits = c(40000,200000), labels = c('40','60','120','160','200')) +
+    ggtitle('messaging time') +
+    theme(legend.position = 'FALSE', text = element_text(size=16), element_line(size=1), plot.title = element_text(hjust = 0.5, size=16), element_rect(size=2, color="#00000"))
+ggsave('./plots/CA_ORLR20_chat_duration_reps.pdf', width=7, height = 11, units='cm', useDingbats = F)
+```
+
+```{r}
+m.chat.time = lmer(data = df_trial, total_chat_duration ~ repNum + (1 + repNum | gameid) + (1 | towerSet))
+summary(m.chat.time)
+```
+
+
+
+#### Total time to send messages across trials
+```{r}
+set.seed(bootstrap_seed)
+
+block.time.boot <- df_trial %>%
+  group_by(repNum) %>%
+  tidyboot_mean(column=total_block_duration, nboot=1000)
+```
+
+```{r}
+block.time.boot %>%
+  ggplot(aes(x=repNum, y=empirical_stat)) +
+    geom_errorbar(aes(ymin=ci_lower, ymax = ci_upper), width = 0, size = 1.5, color = primary_color) +  
+    geom_line(size=1.5, color = primary_color)+
+    geom_point(size = 4, color = primary_color) +
+    ylab("total build duration") +
+    xlab("repetition") +
+    theme_few() +
+    theme(legend.position = 'FALSE', text = element_text(size=16), element_line(size=1), element_rect(size=2, color="#00000"))
+
+```
+
+```{r}
+m.block.time = lmer(data = df_trial, total_block_duration ~ repNum + (1 + repNum | gameid) + (1 | towerSet))
+summary(m.block.time)
 ```
 
