@@ -1,11 +1,13 @@
 // target towers (hand-encoded into speaker's DSL)
-var trialSequence = json.read('../data/language_output/programs_ppt_'
-                              + argv.participantNumber + '.json');
+var trialSequence = json.read('input/ppt'+ argv.participantNumber + '.json');
 
 var lexemes = ['blah', 'blab', 'bloop', 'bleep', 'blarp'];
 var baseDSLPrimitives = ['h', 'v']
     .concat(map(function(i) { return 'l_' + i}, _.range(13)),
             map(function(i) { return 'r_' + i}, _.range(13)));
+var fancyOnes = function(values) {
+    return _.difference(values, baseDSLPrimitives);
+}
 var numIterations = argv.numIterations;
 var alpha = argv.alpha;
 var beta = argv.beta;
@@ -17,61 +19,79 @@ var makeObject = function(key, value) {
 };
 
 // extend starting lexicon to include (uncertain) mapping for new DSL primitives
-var LexiconPrior = function(dsl) {
+var LexiconPrior = function(agent, dsl) {
   return Infer({method: 'enumerate'}, function() {
-    var baseLexicon = {
+    // first, build up mappings for baseDSL
+    var baseLexicon = reduce(function(item, rest) {
+      return extend(rest, (
+        item[0] == 'r' ? makeObject(item, 'move to the right by ' + item.split('_')[1]) :
+        item[0] == 'l' ? makeObject(item, 'move to the left by ' + item.split('_')[1]) : {}
+      ))
+    }, {
       'h' : 'place a horizontal block.',
       'v' : 'place a vertical block.',
-    };
+    }, dsl.slice(2));
+    // then extend with remaining
     return reduce(function(item, rest) {
-      var newItem = (
-        item[0] == 'r' ?
-          makeObject(item, 'move to the right by ' + item.split('_')[1]) :
-          item[0] == 'l' ? 
-          makeObject(item, 'move to the left by ' + item.split('_')[1]) :
-          makeObject(item, sample(Categorical({vs: lexemes})))
-      );
-      return extend(rest, newItem);
-    }, baseLexicon, dsl.slice(2));
+      if(item == 'null') {
+        return extend(rest, {'null' : 'null'})
+      } else if(agent == 'architect') {
+        return extend(rest, makeObject(item, sample(Categorical({vs: lexemes}))))
+      } else {
+        return extend(rest, makeObject(item, uniformDraw(fancyOnes(dsl))))
+      }
+    }, (
+      agent == 'architect' ? baseLexicon : _.invert(baseLexicon)
+    ), (
+      agent == 'architect' ? fancyOnes(dsl).concat('null') : lexemes.concat('null')
+    ))
   });
 }
 
-var UtterancePrior = function(program, dsl) {
+var UttSeqPrior = function(program, dsl) {
   return Infer({method: 'enumerate'}, function() {
-    var lexicon = sample(LexiconPrior(dsl));
+    var lexicon = sample(LexiconPrior('architect', dsl));
     return map(function(instruct) {
       return parseDSL(instruct, lexicon);
     }, program.split(' '));
   });
 };
 
-// recursively parse expressions written in DSL into language
+// parse expressions written in DSL into language
 var parseDSL = function(e, lexicon) {
   return lexicon[e];
 };
 
 // parse expressions written in language back to own DSL
-// if we don't know a word, we randomly pick one of the 'fancy' ones...
 var parseLanguage = cache(function(language, lexicon) {
-  var fancyOnes = _.difference(_.keys(lexicon), baseDSLPrimitives);
-  var invertedLex = _.invert(lexicon);
-  return Infer({method: 'enumerate'}, function() {
-    return (flip(epsilon) ? uniformDraw(_.keys(lexicon)) :
-            _.has(invertedLex, language) ? invertedLex[language] :
-            uniformDraw(fancyOnes));
-    // return  _.has(invertedLex, language) ? invertedLex[language] : uniformDraw(fancyOnes);
+  return lexicon[language]
+});
+
+// what would a builder with this lexicon do if they heard these words?
+var literalBuilder = cache(function(utt, dsl, lexicon) {
+  Infer({method: 'enumerate'}, function() {
+      return flip(epsilon) ? uniformDraw(fancyOnes(dsl)) : parseLanguage(utt, lexicon);
+  });
+});
+
+// what would a builder with this lexical do if they heard these words?
+var literalArchitect = cache(function(instruct, lexicon) {
+  Infer({method: 'enumerate'}, function() {
+      return flip(epsilon) ? uniformDraw(lexemes) : parseDSL(instruct, lexicon);
   });
 });
 
 // compute lexicon posterior, taking into account some previous observations
 // speakers do this by assuming data came from knowledgable listener, and vice versa
 var lexiconPosterior = function(originAgent, currDSL, prevTrials) {
+  console.log('computing posterior...')
   var combinedPrimitives = _.uniq(_.flatten(_.map(prevTrials, 'dsl')).concat(currDSL));
+  var otherAgent = originAgent == 'builder' ? 'architect' : 'builder'
   return Infer({method: 'enumerate'}, function() {
-    var lexicon = sample(LexiconPrior(combinedPrimitives));
+    var lexicon = sample(LexiconPrior(otherAgent, combinedPrimitives));
 
     // enforce mutual exclusivity (i.e. no two chunks map to same word)
-    //condition(_.uniq(_.values(lexicon)).length == dsl.length);
+    //condition(_.uniq(_.values(lexicon)).length == _.values(lexicon).length);
     
     // loop through data from previous rounds, condition on data from partner
     mapData({data: prevTrials}, function(trial){
@@ -82,10 +102,10 @@ var lexiconPosterior = function(originAgent, currDSL, prevTrials) {
         var utt = instruction[0];
         var response = instruction[1];
         var targetInstruction = instruction[2];
-        if(originAgent === 'B') {
-          factor(_.isEqual(parseDSL(targetInstruction, lexicon), utt) ? 0 : -3);
-        } else if(originAgent === 'A') {
-          factor(parseLanguage(utt, lexicon).score(response));
+        if(otherAgent === 'architect') {
+          factor(literalArchitect(targetInstruction, lexicon).score(utt));
+        } else if(otherAgent === 'builder') {
+          factor(literalBuilder(utt, combinedPrimitives, lexicon).score(response));
         }
       });
     });
@@ -93,52 +113,50 @@ var lexiconPosterior = function(originAgent, currDSL, prevTrials) {
   });
 };
 
-// conventional builder (L0, marginalizing over lexicons)
-var Builder = cache(function(utt, state, prevData) {
-  return Infer({method:"enumerate"}, function(){
-    var lexicon = sample(lexiconPosterior('B', state.dsl, prevData));
-    return sample(parseLanguage(utt, lexicon));
-  });
-});
 
-// what would a builder with this lexical do if they heard these words?
-var literalBuilder = cache(function(utt, lexicon) {
-  Infer({method: 'enumerate'}, function() {
-      return sample(parseLanguage(utt, lexicon));
+// conventional builder (marginalizing over lexicons)
+var Builder = cache(function(utt, state, prevData) {
+  var posterior = lexiconPosterior('builder', state.dsl, prevData)
+    console.log(JSON.stringify((marginalize(posterior, function(x) {return x['chunk_Pi'] == 'bloop' }))))
+
+  return Infer({method:"enumerate"}, function(){
+    var lexicon = sample(posterior);
+    var instruction = uniformDraw(_.keys(lexicon))
+    condition(_.includes(state.dsl, instruction))
+    factor(literalArchitect(instruction, lexicon).score(utt))
+    return instruction
   });
 });
 
 // conventional Architect (S1, reasoning about expected L1 behavior across lexicons)
 var Architect = cache(function(currTrial, prevData) {
   // construct current program prior
-  var possiblePrograms = _.keys(currTrial.programs_with_length);
-  var programPrior = Categorical({vs: possiblePrograms});
-  var posterior = lexiconPosterior('A', currTrial.dsl, prevData);
-  
+  var programPrior = Categorical({vs: _.keys(currTrial.programs_with_length)});
+  var posterior = lexiconPosterior('architect', currTrial.dsl, prevData);
   return Infer({method:"enumerate"}, function(){
     // decide which program to produce
     var instructSeq = sample(programPrior);
-    var uttSeq = sample(UtterancePrior(instructSeq, currTrial.dsl));
+    var uttSeq = sample(UttSeqPrior(instructSeq, currTrial.dsl));
     
     // marginalize over lexicon beliefs
     var utility = expectation(posterior, function(lexicon) {
       return sum(map2(function(utt, instruct) {
-        return parseLanguage(utt, lexicon).score(instruct);
+        return literalBuilder(utt, currTrial.dsl, lexicon).score(instruct);
       }, uttSeq, instructSeq.split(' ')));
     });
-    
+    console.log(instructSeq, uttSeq, utility)
     factor(alpha * ((1 - beta) * utility - beta * instructSeq.length));
     return {utt: uttSeq, intendedSeq: instructSeq};
   });
 });
 
 var step = function(i, remainingTrials, prevData, filename) {
-  if(remainingTrials.length == 0) 
+  if(remainingTrials.length == 0) {
     return prevData;
+  }
   var trialNum = prevData.length;
   var currTrial = first(remainingTrials);
-  var speakerDist = Architect(currTrial, prevData);
-  var speakerAction = sample(speakerDist);
+  var speakerAction = sample(Architect(currTrial, prevData))
   var intendedSeq = speakerAction.intendedSeq;
   var listenerActionSeq = map(function(uttPart) {
     var listenerDist = Builder(uttPart, currTrial, prevData);
@@ -147,20 +165,22 @@ var step = function(i, remainingTrials, prevData, filename) {
 
   // TODO: give partial credit (correct is currently 'all-or-none')
   var newData = {
-    targetInstruction: intendedSeq,
+    trialNum: trialNum,
+    targetInstruction: intendedSeq.split(' '),
     utt : speakerAction.utt,
     responses : listenerActionSeq,
     correct: _.isEqual(listenerActionSeq, intendedSeq.split(' ')),
     numInstructions: intendedSeq.split(' ').length,
     dsl : currTrial.dsl
   };
+  console.log(newData)
   csv.writeLine([argv.chainNum, argv.participantNumber, i, argv.alpha, argv.beta, trialNum,
                  newData.correct, newData.numInstructions, newData.targetInstruction,
                  newData.utt.join("~~~"), newData.responses.join(' ')], filename);
   return step(i, rest(remainingTrials), prevData.concat(newData), filename);
 };
 
-var fine_grained_csv = csv.open('language_output/trajectory_bytrial_chain' + argv.chainNum + '.csv');
+var fine_grained_csv = csv.open('output/trajectory_bytrial_chain' + argv.chainNum + '.csv');
 csv.writeLine(['chainNum', 'ppt', 'iteration', 'alpha', 'beta', 'trialNum', 'accuracy',
                'descriptionLength', 'intendedSequence', 'speakerUtterance',
                'listenerResponse'],
