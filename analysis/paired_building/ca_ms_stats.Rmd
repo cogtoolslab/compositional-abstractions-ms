@@ -296,6 +296,12 @@ d.ref.raw = read_csv(here('results/csv/df_ref_exps_melt.csv'))
 
 TODO: we should be handling rater variation better (i.e. calculate mixed vs. tower vs. block *within* rater and THEN aggregate proportions) otherwise rater noisiness is going to show up as more 'mixed'.
 
+```{r}
+block_color = '#000000'
+subtower_color = '#175FFF'
+tower_color = '#009948'
+scene_color = '#E1AD01'
+```
 
 ```{r}
 # Sum raw referential expression counts then divide by 4 (since we have 4 raters)
@@ -313,7 +319,8 @@ d.ref = d.ref.raw %>%
 
 ggplot(d.ref, aes(x=rep, y = n, fill=mixType)) + 
   geom_bar(stat="identity",position = 'fill') +
-  scale_fill_manual(values=c('black', "#345FD6", "#3E7E30")) +
+  # scale_fill_manual(values=c('black', "#345FD6", "#3E7E30")) +
+  scale_fill_manual(values=c(block_color, subtower_color, tower_color)) +
   xlab("repetition") +
   ylab('frequency') +
   theme(legend.position = 'FALSE', aspect.ratio = 1,
@@ -331,20 +338,24 @@ aggregate_reps <- d.ref.raw %>%
   summarise(mean_refs = mean(sum_refs)) %>%
   group_by(rep, exp_type) %>% 
   tidyboot_mean(mean_refs)
-
+```
+```{r}
 ggplot(aggregate_reps, aes(x=rep, y=empirical_stat, colour=exp_type)) + geom_line(size = 1.5)+
   geom_errorbar(aes(ymax=ci_upper, ymin = ci_lower), width = 0, size = 1.5)+
   geom_point(size = 4) +
   xlab("repetition")+
   ylab("# referring expressions")+
   xlim(c(0.5,4.5)) +  
-  geom_hline(yintercept = 2, linetype = 'dashed', color = "#3E7E30") +
-  geom_hline(yintercept = 8, linetype = 'dashed', color = "#151515") +
+  # geom_hline(yintercept = 2, linetype = 'dashed', color = "#3E7E30") +
+  geom_hline(yintercept = 2, linetype = 'dashed', color = tower_color) +
+  geom_hline(yintercept = 8, linetype = 'dashed', color = block_color) +
   theme(legend.position = 'FALSE', aspect.ratio = 1, 
         text = element_text(size=16),
         element_line(size=1),
         element_rect(size=2, color="#00000"))+
-  scale_color_manual(values=c("#151515","#3E7E30"))
+  # scale_color_manual(values=c("#151515","#3E7E30"))
+  scale_color_manual(values=c(block_color,tower_color))
+
 
 ggsave(here('results/plots/fig4B.pdf'), width=11, height = 11, units='cm', useDingbats = F)
 ```
