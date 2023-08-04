@@ -455,6 +455,42 @@ summary(m3)
 ```
 
 
+# Simulations
+
+## Import and format simulation output
+
+
+
+```{r}
+library(ggthemes)
+d.sim <- read_csv(here('model/convention_formation/webppl_implementation/output/trajectories.csv'))
+d.sim %>%
+  mutate(block = floor(trialNum / 3)) %>%
+  group_by(alpha, beta, epsilon, block) %>%
+  filter(alpha == 5) %>%
+  tidyboot_mean(accuracy) %>%
+  ggplot(aes(x = block, y = empirical_stat, color = alpha, group = alpha)) +
+    geom_line() +
+    geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0) +
+    facet_grid(epsilon ~ beta, scales = 'free') +
+    labs(y = '% accuracy') +
+    ylim(0, 1) +
+    theme_few()
+```
+
+```{r}
+d.sim %>%
+  mutate(block = floor(trialNum / 3)) %>%
+  group_by(alpha, beta, epsilon, block) %>%
+  summarize(eff = mean(descriptionLength)) %>%
+  filter(alpha == 5) %>%
+  ggplot(aes(x = block, y = eff, color = alpha, group = alpha)) +
+    geom_line() +
+    labs(y = 'utterance length') +
+    facet_grid(epsilon ~ beta, scales = 'free') +
+    theme_few()
+```
+
 # Supplementary analyses
 
 ## Proportion of trials that are perfect reconstructions
