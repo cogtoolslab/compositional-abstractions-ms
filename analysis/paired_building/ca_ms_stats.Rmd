@@ -382,36 +382,79 @@ summary(m3)
 
 ## Import and format simulation output
 
-
-
 ```{r}
 library(ggthemes)
-d.sim <- read_csv(here('model/convention_formation/webppl_implementation/output/trajectories.csv'))
-d.sim %>%
-  mutate(block = floor(trialNum / 3)) %>%
-  group_by(alpha, beta, epsilon, block) %>%
-  filter(alpha == 5) %>%
-  tidyboot_mean(accuracy) %>%
-  ggplot(aes(x = block, y = empirical_stat, color = alpha, group = alpha)) +
-    geom_line() +
-    geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0) +
-    facet_grid(epsilon ~ beta, scales = 'free') +
-    labs(y = '% accuracy') +
-    ylim(0, 1) +
-    theme_few()
+d.sim <- read_csv(here('model/convention_formation/webppl_implementation/output/trajectories.csv')) %>%
+  mutate(block = floor(trialNum / 3), 
+         modelType = floor(chainNum/49) %% 3,
+         modelType = case_when(modelType == 0 ~ 'full',
+                               modelType == 1 ~ 'noAbstraction', 
+                               modelType == 2 ~ 'noConvention')) 
 ```
+
+## Make accuracy param grid
 
 ```{r}
 d.sim %>%
-  mutate(block = floor(trialNum / 3)) %>%
-  group_by(alpha, beta, epsilon, block) %>%
-  summarize(eff = mean(descriptionLength)) %>%
+  group_by(alpha, beta, epsilon, modelType, block) %>%
   filter(alpha == 5) %>%
-  ggplot(aes(x = block, y = eff, color = alpha, group = alpha)) +
+  tidyboot_mean(accuracy, nboot = 1) %>%
+  ggplot(aes(x = block+1, y = empirical_stat*100, linetype = modelType, group = modelType)) +
     geom_line() +
-    labs(y = 'utterance length') +
+    geom_errorbar(aes(ymin = ci_lower*100, ymax = ci_upper*100), width = 0) +
     facet_grid(epsilon ~ beta, scales = 'free') +
-    theme_few()
+    labs(y = '% accuracy', x = 'repetition') +
+    scale_linetype_manual(values = c('solid','longdash','dotted')) +
+    ylim(0, 100) +
+    theme_few() +
+    theme(legend.position = 'top', aspect.ratio = 1)
+
+ggsave(here('results/plots/supplemental_grid_accuracy.pdf'), width=15, height = 15, units='cm', useDingbats = F)
+```
+
+## Make efficiency param grid
+
+```{r}
+d.sim %>%
+  group_by(alpha, beta, epsilon, block, modelType) %>%
+  filter(alpha == 2) %>%
+  tidyboot_mean(descriptionLength, nboot = 1) %>%
+  ggplot(aes(x = block+1, y = empirical_stat, linetype = modelType, group = modelType)) +
+    geom_line() +
+    geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0) +
+    labs(y = 'utterance length', x = 'repetition') +
+    scale_linetype_manual(values = c('solid','longdash','dotted')) +
+    facet_grid(epsilon ~ beta, scales = 'free') +
+    ylim(0, 16) +
+    theme_few() +
+    theme(legend.position = 'top', aspect.ratio = 1)
+
+ggsave(here('results/plots/supplemental_grid_efficiency.pdf'), width=15, height = 15, units='cm', useDingbats = F)
+```
+
+### Make main text fig
+
+```{r}
+d.sim.indiv <- d.sim %>%
+  filter(alpha == 5, beta == 0.3, epsilon == 0.075) %>%
+  pivot_longer(cols = c('descriptionLength', 'accuracy'), names_to = 'metric', values_to = 'm') %>%
+  group_by(chainNum, block, metric, modelType) %>%
+  summarize(m = mean(m))
+
+d.sim.boot <- d.sim.indiv %>%
+  group_by(block, metric, modelType) %>%
+  tidyboot_mean(m) 
+  
+ggplot(d.sim.boot, aes(x = block, y = empirical_stat, group = modelType, linetype = modelType)) +
+    geom_line() +
+    geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper), width = 0) +
+    labs(y = '') +
+    facet_grid(metric ~ ., scales = 'free') +
+    scale_linetype_manual(values = c('solid','longdash','dotted')) +
+    theme_few() +
+    theme(aspect.ratio = 1)
+
+ggsave(here('results/plots/fig5B.pdf'), width=11, height = 21, units='cm', useDingbats = F)
 ```
 
 # Supplementary analyses
