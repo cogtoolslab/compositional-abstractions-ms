@@ -109,9 +109,11 @@ var literalArchitect = cache(function(instruct, lexicon) {
 // speakers do this by assuming data came from knowledgable listener, and vice versa
 var LexiconPosterior = cache(function(originAgent, currDSL, prevTrials) {
   var combinedPrimitives = _.uniq(_.flatten(_.map(prevTrials, 'dsl')).concat(currDSL));
-  var otherAgent = originAgent == 'builder' ? 'architect' : 'builder'
+  var otherAgent = originAgent == 'builder' ? 'architect' : 'builder';
+
+  // lesioned model without convention formation keeps using prior over lexicons
   if(modelType == 'noConvention') {
-    return LexiconPrior(otherAgent, combinedPrimitives)
+    return LexiconPrior(otherAgent, combinedPrimitives);
   }
   return Infer({method: 'enumerate'}, function() {
     var lexicon = sample(LexiconPrior(otherAgent, combinedPrimitives));
@@ -121,7 +123,7 @@ var LexiconPosterior = cache(function(originAgent, currDSL, prevTrials) {
 
     // loop through data from previous rounds, condition on data from partner
     mapData({data: prevTrials}, function(trial){
-      var instructions = _.zip(trial.utt, trial.responses, trial.targetInstruction);
+      var instructions = _.zip(trial.utt, trial.responses, trial.targetInstruction.split(' '));
 
       // loop through sub-trial "events" 
       mapData({data: instructions }, function(instruction){
@@ -144,12 +146,14 @@ var LexiconPosterior = cache(function(originAgent, currDSL, prevTrials) {
 var Builder = cache(function(utt, dsl, posterior) {
   return Infer({method:"enumerate"}, function(){
     var lexicon = sample(posterior);
-    var instruction = uniformDraw(_.keys(lexicon))
+    var instruction = uniformDraw(_.keys(lexicon));
 
     // insure they only execute using current DSL even if their lexicon has old fragments in it
-    condition(_.includes(dsl, instruction))
-    factor(alpha * literalArchitect(instruction, lexicon).score(utt))
-    return flip(epsilon) ? uniformDraw(dsl) : instruction
+    condition(_.includes(dsl, instruction));
+    factor(alpha * literalArchitect(instruction, lexicon).score(utt));
+
+    // some probability of making an error
+    return flip(epsilon) ? uniformDraw(dsl) : instruction;
   });
 });
 
@@ -178,39 +182,38 @@ var step = function(i, remainingTrials, prevData, filename) {
   if(remainingTrials.length == 0) {
     return prevData;
   }
+  // lesioned version without library learning keeps using baseDSL
   var currTrial = (
     modelType == 'noDSL' ?
     extend(first(remainingTrials), {'dsl' : baseDSL}) :
     first(remainingTrials)
-  )
+  );
   var trialNum = prevData.length;
-  var speakerAction = sample(Architect(currTrial, prevData))
+  var speakerAction = sample(Architect(currTrial, prevData));
   var intendedSeq = speakerAction.intendedSeq;
-  var builderPosterior = LexiconPosterior('builder', currTrial.dsl, prevData)
+  var builderPosterior = LexiconPosterior('builder', currTrial.dsl, prevData);
   var listenerActionSeq = map(function(uttPart) {
     var listenerDist = Builder(uttPart, currTrial.dsl, builderPosterior);
     return sample(listenerDist);
   }, speakerAction.utt);
 
-  // TODO: give partial credit (correct is currently 'all-or-none')
   var newData = {
     trialNum: trialNum,
-    targetInstruction: intendedSeq.split(' '),
+    targetInstruction: intendedSeq,
     utt : speakerAction.utt,
     responses : listenerActionSeq,
     correct: _.isEqual(listenerActionSeq, intendedSeq.split(' ')),
     numInstructions: intendedSeq.split(' ').length,
     dsl : currTrial.dsl
   };
-  //console.log(newData)
-  csv.writeLine([argv.chainNum, argv.participantNumber, i, argv.alpha, argv.beta, argv.epsilon, trialNum,
+  csv.writeLine([argv.chainNum, argv.participantNumber, argv.modelType, i, argv.alpha, argv.beta, argv.epsilon, trialNum,
                  newData.correct, newData.numInstructions, newData.targetInstruction,
                  newData.utt.join("~~~"), newData.responses.join(' ')], filename);
   return step(i, rest(remainingTrials), prevData.concat(newData), filename);
 };
 
 var fine_grained_csv = csv.open('output/trajectory_bytrial_chain' + argv.chainNum + '.csv');
-csv.writeLine(['chainNum', 'ppt', 'iteration', 'alpha', 'beta', 'epsilon', 'trialNum', 'accuracy',
+csv.writeLine(['chainNum', 'ppt', 'modelType', 'iteration', 'alpha', 'beta', 'epsilon', 'trialNum', 'accuracy',
                'descriptionLength', 'intendedSequence', 'speakerUtterance',
                'listenerResponse'],
               fine_grained_csv);
